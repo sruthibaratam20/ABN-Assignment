@@ -1,0 +1,127 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  # ---- EDIT THESE to match your Azure DevOps service connection & resource names ----
+  azureSubscription: 'dmp-azure-service-connection'   # Name of the Azure Resource Manager service connection you create in Project Settings
+  resourceGroupName: 'dmp-assessment-rg'
+  location: 'centralindia'
+  webAppName: 'dmp-helloworld-CHANGE-ME'              # Must be globally unique
+  armTemplatePath: '$(System.DefaultWorkingDirectory)/arm-template/azuredeploy.json'
+  armParametersPath: '$(System.DefaultWorkingDirectory)/arm-template/azuredeploy.parameters.json'
+
+stages:
+
+# -------------------------------------------------------------------
+# STAGE 1: BUILD - install dependencies and package the app
+# -------------------------------------------------------------------
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+    - job: BuildJob
+      displayName: 'Install dependencies and package app'
+      steps:
+        - task: NodeTool@0
+          inputs:
+            versionSpec: '20.x'
+          displayName: 'Install Node.js'
+
+        - script: |
+            cd app
+            npm install
+          displayName: 'npm install'
+
+        - script: |
+            cd app
+            npm install --prefix ../test 2>/dev/null || true
+          displayName: 'Prep test deps (no-op safeguard)'
+
+        - task: ArchiveFiles@2
+          displayName: 'Archive app folder for deployment'
+          inputs:
+            rootFolderOrFile: '$(System.DefaultWorkingDirectory)/app'
+            includeRootFolder: false
+            archiveType: 'zip'
+            archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
+            replaceExistingArchive: true
+
+        - publish: '$(Build.ArtifactStagingDirectory)/app.zip'
+          artifact: 'drop'
+          displayName: 'Publish build artifact'
+
+# -------------------------------------------------------------------
+# STAGE 2: TEST - run automated tests
+# -------------------------------------------------------------------
+- stage: Test
+  displayName: 'Test Stage'
+  dependsOn: Build
+  jobs:
+    - job: TestJob
+      displayName: 'Run unit tests'
+      steps:
+        - task: NodeTool@0
+          inputs:
+            versionSpec: '20.x'
+
+        - script: |
+            cd app
+            npm install
+            npm test
+          displayName: 'Run mocha tests'
+
+# -------------------------------------------------------------------
+# STAGE 3: DEPLOY INFRASTRUCTURE - ARM template deployment (Task 4)
+# -------------------------------------------------------------------
+- stage: DeployInfra
+  displayName: 'Deploy Infrastructure (ARM Template)'
+  dependsOn: Test
+  jobs:
+    - job: DeployInfraJob
+      displayName: 'Deploy VNet + App Service via ARM'
+      steps:
+        - task: AzureResourceManagerTemplateDeployment@3
+          displayName: 'Deploy ARM template'
+          inputs:
+            deploymentScope: 'Resource Group'
+            azureResourceManagerConnection: '$(azureSubscription)'
+            subscriptionId: '$(subscriptionId)'   # optional if connection is subscription-scoped
+            action: 'Create Or Update Resource Group'
+            resourceGroupName: '$(resourceGroupName)'
+            location: '$(location)'
+            templateLocation: 'Linked artifact'
+            csmFile: '$(armTemplatePath)'
+            csmParametersFile: '$(armParametersPath)'
+            overrideParameters: '-webAppName $(webAppName) -location $(location)'
+            deploymentMode: 'Incremental'
+
+# -------------------------------------------------------------------
+# STAGE 4: DEPLOY APP - push the Hello World app to the App Service
+# -------------------------------------------------------------------
+- stage: DeployApp
+  displayName: 'Deploy Application'
+  dependsOn: DeployInfra
+  jobs:
+    - deployment: DeployWebApp
+      displayName: 'Deploy to Azure App Service'
+      environment: 'dmp-assessment-env'
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - download: current
+                artifact: 'drop'
+
+              - task: AzureWebApp@1
+                displayName: 'Deploy Hello World app'
+                inputs:
+                  azureSubscription: '$(azureSubscription)'
+                  appType: 'webAppLinux'
+                  appName: '$(webAppName)'
+                  package: '$(Pipeline.Workspace)/drop/app.zip'
+                  runtimeStack: 'NODE|20-lts'
+                  startUpCommand: 'node server.js'
