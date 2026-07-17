@@ -70,8 +70,9 @@ stages:
 
         - script: |
             cd app
-            npm install
-            npm test
+            npm install --include=dev
+            chmod +x node_modules/.bin/*
+            npx mocha test/*.test.js --timeout 5000
           displayName: 'Run mocha tests'
 
 # -------------------------------------------------------------------
