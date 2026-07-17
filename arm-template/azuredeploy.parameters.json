@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "webAppName": {
-      "value": "dmp-helloworld-CHANGE-ME"
+      "value": "dmp-helloworld-Sruthi2026"
     },
     "appServicePlanSku": {
       "value": "F1"

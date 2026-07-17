@@ -11,7 +11,7 @@ variables:
   azureSubscription: 'dmp-azure-service-connection'   # Name of the Azure Resource Manager service connection you create in Project Settings
   resourceGroupName: 'dmp-assessment-rg'
   location: 'centralindia'
-  webAppName: 'dmp-helloworld-CHANGE-ME'              # Must be globally unique
+  webAppName: 'dmp-helloworld-sruthi2026'              # Must be globally unique
   armTemplatePath: '$(System.DefaultWorkingDirectory)/arm-template/azuredeploy.json'
   armParametersPath: '$(System.DefaultWorkingDirectory)/arm-template/azuredeploy.parameters.json'
 
