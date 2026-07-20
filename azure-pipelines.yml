@@ -7,11 +7,10 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  # ---- EDIT THESE to match your Azure DevOps service connection & resource names ----
-  azureSubscription: 'dmp-azure-service-connection'   # Name of the Azure Resource Manager service connection you create in Project Settings
+  azureSubscription: 'dmp-azure-service-connection'
   resourceGroupName: 'dmp-assessment-rg'
   location: 'centralindia'
-  webAppName: 'dmp-helloworld-sruthi2026'              # Must be globally unique
+  webAppName: 'dmp-helloworld-sruthi2026'
   armTemplatePath: '$(System.DefaultWorkingDirectory)/arm-template/azuredeploy.json'
   armParametersPath: '$(System.DefaultWorkingDirectory)/arm-template/azuredeploy.parameters.json'
 
@@ -35,11 +34,6 @@ stages:
             cd app
             npm install
           displayName: 'npm install'
-
-        - script: |
-            cd app
-            npm install --prefix ../test 2>/dev/null || true
-          displayName: 'Prep test deps (no-op safeguard)'
 
         - task: ArchiveFiles@2
           displayName: 'Archive app folder for deployment'
@@ -72,7 +66,7 @@ stages:
             cd app
             npm install --include=dev
             node node_modules/mocha/bin/mocha.js test/*.test.js --timeout 5000
-      displayName: 'Run mocha tests'
+          displayName: 'Run mocha tests'
 
 # -------------------------------------------------------------------
 # STAGE 3: DEPLOY INFRASTRUCTURE - ARM template deployment (Task 4)
@@ -89,7 +83,7 @@ stages:
           inputs:
             deploymentScope: 'Resource Group'
             azureResourceManagerConnection: '$(azureSubscription)'
-            subscriptionId: '$(subscriptionId)'   # optional if connection is subscription-scoped
+            subscriptionId: '$(subscriptionId)'
             action: 'Create Or Update Resource Group'
             resourceGroupName: '$(resourceGroupName)'
             location: '$(location)'
