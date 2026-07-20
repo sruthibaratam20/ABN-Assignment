@@ -63,17 +63,7 @@ dmp-assessment/
 
 ---
 
-## STEP 4 — Edit the placeholders before running anything
-
-Web App names must be **globally unique** across Azure. Update these two files:
-
-- `arm-template/azuredeploy.parameters.json` → change `"dmp-helloworld-CHANGE-ME"` to something unique, e.g. `dmp-helloworld-chandu2026`.
-- `azure-pipelines.yml` → update the `webAppName` variable to the **same** unique name.
-- Optionally update `resourceGroupName` and `location` (e.g. `centralindia`, `eastus`) to whatever your sandbox allows.
-
----
-
-## STEP 5 — Understand the ARM template (Task 3 & 4 of the assignment)
+## STEP 4 — Understand the ARM template (Task 3 & 4 of the assignment)
 
 `arm-template/azuredeploy.json` deploys, inside one Resource Group:
 
@@ -106,7 +96,7 @@ If this succeeds manually, your pipeline's ARM deployment stage will work too.
 1. **Build** — installs npm dependencies, zips the app into an artifact
 2. **Test** — runs `npm test` (mocha + supertest tests in `test/server.test.js`)
 3. **DeployInfra** — runs the ARM template deployment (creates VNet + App Service)
-4. **DeployApp** — deploys the zipped Hello World app onto the App Service just created
+4. **DeployApp** — deploys Hello World app onto the App Service just created
 
 This structure directly demonstrates: pipeline configuration, build agents, test integration, ARM/IaC deployment, and deployment to an Azure service — i.e. everything listed under "Skills Assessed" in both tasks.
 
