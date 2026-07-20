@@ -83,7 +83,6 @@ stages:
           inputs:
             deploymentScope: 'Resource Group'
             azureResourceManagerConnection: '$(azureSubscription)'
-            subscriptionId: '$(subscriptionId)'
             action: 'Create Or Update Resource Group'
             resourceGroupName: '$(resourceGroupName)'
             location: '$(location)'
