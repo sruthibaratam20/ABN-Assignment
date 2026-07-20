@@ -1,29 +1,9 @@
 # DMP Azure DevOps Infrastructure & Data Engineering Assessment - Complete Solution
 
-This package covers **both hands-on tasks** from the assessment:
-
 1. CI/CD Pipeline (build, test, deploy) for a "Hello World" web app
 2. ARM template deployment (VNet, Resource Group, App Service) integrated into the same pipeline
 
 Everything below is written so you can do it in order and finish quickly, using only Azure's free tier.
-
----
-
-## Folder structure
-
-```
-dmp-assessment/
-├── app/
-│   ├── server.js          # Hello World Express app
-│   └── package.json
-├── test/
-│   └── server.test.js     # Automated tests (mocha + supertest)
-├── arm-template/
-│   ├── azuredeploy.json            # ARM template: VNet + App Service Plan + Web App
-│   └── azuredeploy.parameters.json # Parameters (edit webAppName before use)
-├── azure-pipelines.yml     # Full pipeline: Build -> Test -> Deploy Infra -> Deploy App
-└── README.md
-```
 
 ---
 
